@@ -16,6 +16,16 @@ export const $subsTitle = createStore<string>(null);
 export const $currentSubs = createStore<TSub[]>([]);
 export const $prevCurrentSubs = createStore<TSub[]>([]);
 export const esSubsChanged = createEvent<string>();
+
+export type TAvailableSub = {
+  label: string;
+  language: string;
+  url?: string;
+};
+export const $availableSubs = createStore<TAvailableSub[]>([]);
+export const availableSubsChanged = createEvent<TAvailableSub[]>();
+$availableSubs.on(availableSubsChanged, (_, subs) => subs);
+
 export const autoPauseFx = createEffect<
   {
     currentSubs: UnitValue<typeof $currentSubs>;

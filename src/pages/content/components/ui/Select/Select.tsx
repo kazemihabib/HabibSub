@@ -4,9 +4,10 @@ export interface SelectProps {
   options: { label: string; value: string }[];
   value?: { label: string; value: string };
   onChange: (option: { label: string; value: string }) => void;
+  placeholder?: string;
 }
 
-export const Select: FC<SelectProps> = ({ options, value, onChange }) => {
+export const Select: FC<SelectProps> = ({ options, value, onChange, placeholder }) => {
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedOption = options.find((opt) => opt.value === e.target.value);
     if (selectedOption) {
@@ -18,7 +19,7 @@ export const Select: FC<SelectProps> = ({ options, value, onChange }) => {
     <div className="es-select-wrapper" style={{ width: "100%", minWidth: "140px" }}>
       <select
         className="es-native-select"
-        value={value?.value}
+        value={value?.value || ""}
         onChange={handleChange}
         style={{
           width: "100%",
@@ -33,6 +34,11 @@ export const Select: FC<SelectProps> = ({ options, value, onChange }) => {
           cursor: "pointer",
         }}
       >
+        {placeholder && !value?.value && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

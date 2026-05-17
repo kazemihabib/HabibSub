@@ -20,8 +20,9 @@ import {
   subsReloadRequested,
   ES_CUSTOM_SUB_LABEL,
   rawSubsAdded,
+  availableSubsChanged,
 } from ".";
-import { $streaming } from "../streamings";
+import { $streaming, fetchCurrentStreamingFx } from "../streamings";
 import { $video, videoTimeUpdate } from "../videos";
 import { 
   $autoPause, 

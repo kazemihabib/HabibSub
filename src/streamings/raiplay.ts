@@ -1,5 +1,5 @@
 import { parse, subTitleType } from "subtitle";
-import { esSubsChanged } from "@src/models/subs";
+import { esSubsChanged, availableSubsChanged, TAvailableSub } from "@src/models/subs";
 import { esRenderSetings } from "@src/models/settings";
 import Service from "./service";
 
@@ -10,9 +10,12 @@ class RaiPlay implements Service {
     [url: string]: subTitleType[];
   };
 
+  private availableSubs: TAvailableSub[] = [];
+
   constructor() {
     this.subCache = {};
     this.handleCaptionsData = this.handleCaptionsData.bind(this);
+    this.handleAvailableSubs = this.handleAvailableSubs.bind(this);
 
     setInterval(() => {
       const controlBar = document.querySelector(".vjs-control-bar");
@@ -26,10 +29,19 @@ class RaiPlay implements Service {
   public init(): void {
     this.injectScript();
     window.addEventListener("esRaiPlayCaptionsData", this.handleCaptionsData as EventListener);
+    window.addEventListener("esRaiPlayAvailableSubs", this.handleAvailableSubs as EventListener);
   }
 
-  public async getSubs(url: string) {
-    if (!url) return parse("");
+  public async getSubs(urlOrLanguage: string) {
+    if (!urlOrLanguage) return parse("");
+
+    let url = urlOrLanguage;
+    // If it's a language code/label instead of a URL, find the URL from our available subs
+    const sub = this.availableSubs.find(s => s.language === urlOrLanguage || s.label === urlOrLanguage);
+    if (sub && sub.url) {
+      url = sub.url;
+    }
+
     if (this.subCache[url]) return this.subCache[url];
 
     console.debug("EasySubs: RaiPlay fetching subs from", url);
@@ -81,8 +93,22 @@ class RaiPlay implements Service {
 
   private handleCaptionsData(event: CustomEvent): void {
     console.debug("EasySubs: RaiPlay captions data received", event.detail);
+    if (!event.detail) {
+      this.subCache = {};
+      esSubsChanged("");
+      return;
+    }
     // event.detail should be the subtitle URL
     esSubsChanged(event.detail);
+  }
+
+  private handleAvailableSubs(event: CustomEvent): void {
+    console.debug("EasySubs: RaiPlay available subs received", event.detail);
+    this.availableSubs = event.detail;
+    if (this.availableSubs.length === 0) {
+      this.subCache = {};
+    }
+    availableSubsChanged(this.availableSubs);
   }
 
   private injectScript() {

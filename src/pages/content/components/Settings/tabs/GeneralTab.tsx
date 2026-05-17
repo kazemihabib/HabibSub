@@ -5,6 +5,7 @@ import {
   $subtitleSource, subtitleSourceChanged,
   $progressBarEnabled, progressBarEnabledChanged
 } from "@src/models/settings";
+import { $availableSubs, esSubsChanged, $subsTitle } from "@src/models/subs";
 import { Toggle } from "../../ui/Toggle";
 import { Select } from "../../ui/Select";
 import { CustomSubs } from "../CustomSubs";
@@ -13,17 +14,29 @@ export const GeneralTab: FC = () => {
   const [
     enabled, handleEnableToggleChanged,
     subtitleSource, handleSubtitleSourceChanged,
-    progressBarEnabled, handleProgressBarEnabledChanged
+    progressBarEnabled, handleProgressBarEnabledChanged,
+    availableSubs, handleEsSubsChanged,
+    subsTitle
   ] = useUnit([
     $enabled, enableToggleChanged,
     $subtitleSource, subtitleSourceChanged,
-    $progressBarEnabled, progressBarEnabledChanged
+    $progressBarEnabled, progressBarEnabledChanged,
+    $availableSubs, esSubsChanged,
+    $subsTitle
   ]);
 
   const sources = [
     { label: "Player Subtitles", value: "player" },
     { label: "Custom File", value: "custom" },
   ];
+
+  const subLanguageOptions = availableSubs.length > 0 
+    ? availableSubs.map(s => ({ label: s.label, value: s.language }))
+    : [{ label: "Follow Player", value: "auto" }];
+
+  const currentSelection = availableSubs.length > 0
+    ? subLanguageOptions.find(opt => opt.value === subsTitle || opt.label === subsTitle)
+    : subLanguageOptions[0];
 
   return (
     <div className="es-settings-tab">
@@ -50,6 +63,26 @@ export const GeneralTab: FC = () => {
           </div>
         </div>
       </div>
+
+      {subtitleSource === "player" && (
+        <div className="es-settings-content__item">
+          <div className="es-settings-content__element">
+            <div className="es-settings-content__element__left">Subtitle Language</div>
+            <div className="es-settings-content__element__right">
+              <Select 
+                options={subLanguageOptions}
+                value={currentSelection}
+                placeholder="Select Language..."
+                onChange={(opt) => {
+                  if (opt.value) {
+                    handleEsSubsChanged(opt.value);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {subtitleSource === "custom" && (
         <div className="es-settings-content__item">
