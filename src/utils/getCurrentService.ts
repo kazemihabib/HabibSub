@@ -10,10 +10,27 @@ import Udemy from "@src/streamings/udemy";
 import Kinopoisk from "@src/streamings/kinopoisk";
 import Amazon from "@src/streamings/amazon";
 import Inoriginal from "@src/streamings/inoriginal";
+import VixCloud from "@src/streamings/vixcloud";
+import RaiPlay from "@src/streamings/raiplay";
 
 export const getCurrentService = (): Service => {
   const titleContent = document.querySelector("title")?.textContent;
-  if (titleContent?.includes("YouTube") || window.location.host === "www.youtube.com") {
+  const host = window.location.host;
+  if (host === "www.raiplay.it") {
+    document.querySelector("html")?.setAttribute("id", "raiplay");
+    return new RaiPlay();
+  }
+  if (
+    host === "vixcloud.co" ||
+    host === "streamingcommunityz.band" ||
+    titleContent?.includes("StreamingCommunity") ||
+    titleContent?.includes("Streaming Community") ||
+    document.querySelector('meta[property="og:site_name"]')?.getAttribute("content")?.includes("StreamingCommunity") ||
+    document.querySelector('[href*="streamingcommunity"], [src*="streamingcommunity"]') !== null
+  ) {
+    return new VixCloud();
+  }
+  if (titleContent?.includes("YouTube") || host === "www.youtube.com") {
     document.querySelector("html")?.setAttribute("id", "youtube");
     if (!!document.querySelector(".ytp-delhi-modern")) {
       // Add class for new youtube delphi design

@@ -1,5 +1,5 @@
 import { $streaming } from "@src/models/streamings";
-import { moveKeyPressed } from "@src/models/videos";
+import { moveKeyPressed, tKeyPressed, uKeyPressed } from "@src/models/keyboard";
 
 const keyboardEvents = ["keyup", "keydown", "keypress"];
 
@@ -7,20 +7,48 @@ export const keyboardHandler = (event: KeyboardEvent) => {
   if (event.code === "ArrowLeft") {
     event.stopPropagation();
     if (event.type === "keydown") {
-      moveKeyPressed({ direction: "prev", force: event.altKey });
+      const video = document.querySelector("video");
+      if (video) video.currentTime -= 5;
     }
   }
   if (event.code === "ArrowRight") {
     event.stopPropagation();
     if (event.type === "keydown") {
-      moveKeyPressed({ direction: "next", force: event.altKey });
+      const video = document.querySelector("video");
+      if (video) video.currentTime += 5;
+    }
+  }
+  if (event.code === "KeyA" || event.key === "a") {
+    event.stopPropagation();
+    if (event.type === "keydown") {
+      moveKeyPressed({ direction: "prev", force: true });
+    }
+  }
+  if (event.code === "KeyD" || event.key === "d") {
+    event.stopPropagation();
+    if (event.type === "keydown") {
+      moveKeyPressed({ direction: "next", force: true });
+    }
+  }
+  if (event.code === "KeyR" || event.key === "r") {
+    event.stopPropagation();
+    if (event.type === "keydown") {
+      moveKeyPressed({ direction: "current", force: false });
     }
   }
   if (event.code === "ArrowDown") {
+    // Keep standard browser behavior for ArrowDown or override if needed
+  }
+  if (event.code === "KeyT" || event.key === "t") {
     event.stopPropagation();
-    event.preventDefault();
     if (event.type === "keydown") {
-      moveKeyPressed({ direction: "current", force: false });
+      tKeyPressed();
+    }
+  }
+  if (event.code === "KeyU" || event.key === "u") {
+    event.stopPropagation();
+    if (event.type === "keydown") {
+      uKeyPressed();
     }
   }
 };

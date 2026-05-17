@@ -16,6 +16,16 @@
   box-sizing: content-box;
   color: #fff;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  &--loading {
+    width: 80px;
+    height: 60px;
+    min-width: 80px;
+    align-items: center;
+    justify-content: center;
+  }
 
   &:after {
     content: "";

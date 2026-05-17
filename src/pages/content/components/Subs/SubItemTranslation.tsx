@@ -18,6 +18,8 @@ import { $subsLanguage } from "@src/models/subs";
 import { getLearningService } from "@src/utils/getLearningService";
 import { TranslateSelect } from "../ui/TranslateSelect";
 
+import { LoadingIcon } from "../ui/LoadingIcon";
+
 export const SubItemTranslation: FC<{ text: string }> = ({ text }) => {
   useGate(WordTranslationsGate, text);
   const [currentWordTranslation, learningService, subsLanguage, translateLanguage, wordTranslationsPendings] = useUnit([
@@ -34,7 +36,15 @@ export const SubItemTranslation: FC<{ text: string }> = ({ text }) => {
     setService(getLearningService(learningService));
   }, [learningService]);
 
-  if (!currentWordTranslation || wordTranslationsPendings[text]) {
+  if (wordTranslationsPendings[text]) {
+    return (
+      <div className="es-word-translation es-word-translation--loading" onClick={(e) => e.stopPropagation()}>
+        <LoadingIcon />
+      </div>
+    );
+  }
+
+  if (!currentWordTranslation) {
     return null;
   }
 

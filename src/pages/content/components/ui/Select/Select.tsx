@@ -1,56 +1,44 @@
-import { FC } from "react";
+import { FC, ChangeEvent } from "react";
 
-import { default as ReactSelect, Props } from "react-select";
+export interface SelectProps {
+  options: { label: string; value: string }[];
+  value?: { label: string; value: string };
+  onChange: (option: { label: string; value: string }) => void;
+}
 
-const customStyles = {
-  control: (baseStyles, _state) => ({
-    ...baseStyles,
-    background: "#51535D",
-    color: "white",
-    border: "none",
-    minHeight: "24px",
-    height: "24px",
-  }),
-  menuPortal: (provided) => ({ ...provided, zIndex: 10000, fontSize: "14px" }),
-  menu: (provided) => ({ ...provided, zIndex: 10000 }),
-  valueContainer: (provided, _state) => ({
-    ...provided,
-    height: "24px",
-    padding: "0 4px",
-    color: "white",
-  }),
-  indicatorsContainer: (provided, _state) => ({
-    ...provided,
-    height: "24px",
-  }),
-  singleValue: (baseStyles) => ({ ...baseStyles, color: "white" }),
-  option: (base) => ({
-    ...base,
-    color: "black",
-  }),
-};
+export const Select: FC<SelectProps> = ({ options, value, onChange }) => {
+  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = options.find((opt) => opt.value === e.target.value);
+    if (selectedOption) {
+      onChange(selectedOption);
+    }
+  };
 
-const theme = (theme) => ({
-  ...theme,
-  colors: {
-    ...theme.colors,
-    neutral30: "white", //control/borderColor(focused)
-    neutral80: "white", //input color
-    primary: "#1296ba", //option bg color selected
-    primary50: "white", // option bg color active(enavled or available)
-  },
-});
-
-export const Select: FC<Props> = (props) => {
   return (
-    <div style={{ width: "100%", minWidth: "140px" }}>
-      <ReactSelect
-        {...props}
-        styles={customStyles}
-        theme={theme}
-        menuPortalTarget={document.body}
-        menuPosition="fixed"
-      />
+    <div className="es-select-wrapper" style={{ width: "100%", minWidth: "140px" }}>
+      <select
+        className="es-native-select"
+        value={value?.value}
+        onChange={handleChange}
+        style={{
+          width: "100%",
+          height: "28px",
+          backgroundColor: "#51535D",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          padding: "0 8px",
+          fontSize: "14px",
+          appearance: "none", // Remove default arrow to style it better if needed
+          cursor: "pointer",
+        }}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

@@ -49,14 +49,15 @@ $streaming.watch((streaming) => {
 });
 
 esSubsChanged.watch((language) => {
-  console.log("Event:", "esSubsChanged");
-  console.log("Language:", language);
+  console.log("Event:", "esSubsChanged", { language });
   removeKeyboardEventsListeners();
   document.querySelectorAll("#es").forEach((e) => e.remove());
   const subsContainer = $streaming.getState().getSubsContainer();
+  console.debug("EasySubs: Target subtitles container:", subsContainer);
   const subsNode = document.createElement("div");
   subsNode.id = "es";
   subsContainer?.appendChild(subsNode);
+  console.debug("EasySubs: Appended #es to container");
   createRoot(subsNode).render(<Subs />);
 
   if (!$streaming.getState().isOnFlight()) {

@@ -9,6 +9,8 @@ import {
 import { TLearningService, TTranslationService } from "../types";
 import { fetchCurrentStreamingFx } from "../streamings";
 
+import { uKeyPressed } from "../keyboard";
+
 export const $enabled = withPersist(createStore<boolean>(true));
 export const enableToggleChanged = createEvent<boolean>();
 export const enableToggleChangeFx = createEffect<boolean, boolean>(
@@ -24,8 +26,52 @@ export const progressBarEnabledChangeFx = createEffect<boolean, boolean>(
   (isEnabled) => isEnabled,
 );
 
-export const $autoStopEnabled = withPersist(createStore<boolean>(true));
-export const autoStopEnabledChanged = createEvent<boolean>();
+export type TPlaybackMode = "basic" | "pause" | "repeat";
+export const $playbackMode = withPersist(createStore<TPlaybackMode>("basic"));
+export const playbackModeChanged = createEvent<TPlaybackMode>();
+
+export const $resumeOnLeave = withPersist(createStore<boolean>(false));
+export const resumeOnLeaveChanged = createEvent<boolean>();
+
+export const $autoResume = withPersist(createStore<boolean>(false));
+export const autoResumeChanged = createEvent<boolean>();
+
+export const $resumeDelay = withPersist(createStore<number>(2.0));
+export const resumeDelayChanged = createEvent<number>();
+
+export const $pauseOnFullTranslation = withPersist(createStore<boolean>(false));
+export const pauseOnFullTranslationChanged = createEvent<boolean>();
+
+export const $blurTranslation = withPersist(createStore<boolean>(false));
+export const blurTranslationChanged = createEvent<boolean>();
+
+export const $showSubtitle = withPersist(createStore<boolean>(true));
+export const showSubtitleChanged = createEvent<boolean>();
+
+export const $showTranslation = withPersist(createStore<boolean>(true));
+export const showTranslationChanged = createEvent<boolean>();
+
+export const $blurSubtitle = withPersist(createStore<boolean>(false));
+export const blurSubtitleChanged = createEvent<boolean>();
+
+export type TSubtitleSource = "player" | "custom";
+export const $subtitleSource = withPersist(createStore<TSubtitleSource>("player"));
+export const subtitleSourceChanged = createEvent<TSubtitleSource>();
+
+export const $keepSubtitleVisible = withPersist(createStore<boolean>(false));
+export const keepSubtitleVisibleChanged = createEvent<boolean>();
+
+export const $repeatCount = withPersist(createStore<number>(2));
+export const repeatCountChanged = createEvent<number>();
+
+export const $pauseAfterRepeat = withPersist(createStore<boolean>(false));
+export const pauseAfterRepeatChanged = createEvent<boolean>();
+
+export const $repeatMarginStart = withPersist(createStore<number>(0));
+export const repeatMarginStartChanged = createEvent<number>();
+
+export const $repeatMarginEnd = withPersist(createStore<number>(0));
+export const repeatMarginEndChanged = createEvent<number>();
 
 export const $netflixOnFlightEnabled = withPersist(createStore<boolean>(false));
 export const netflixOnFlightEnabledChanged = createEvent<boolean>();
@@ -101,6 +147,12 @@ export const chatGPTApiKeyModalClosed = createEvent();
 export const $subsFontSize = withPersist(createStore<number>(100));
 export const subsFontSizeButtonPressed = createEvent<number>();
 export const subsFontSizeChangeFx = createEffect<number, number>(
+  (value) => value,
+);
+
+export const $subsTranslationFontSize = withPersist(createStore<number>(80));
+export const subsTranslationFontSizeButtonPressed = createEvent<number>();
+export const subsTranslationFontSizeChangeFx = createEffect<number, number>(
   (value) => value,
 );
 
@@ -185,6 +237,11 @@ sample({
 });
 
 sample({
+  clock: subsTranslationFontSizeButtonPressed,
+  target: subsTranslationFontSizeChangeFx,
+});
+
+sample({
   clock: subsBackgroundButtonPressed,
   target: subsBackgroundToggleFx,
 });
@@ -200,7 +257,22 @@ $progressBarEnabled.on(
   progressBarEnabledChangeFx.doneData,
   (_, isEnabled) => isEnabled,
 );
-$autoStopEnabled.on(autoStopEnabledChanged, (_, isEnabled) => isEnabled);
+$playbackMode.on(playbackModeChanged, (_, mode) => mode);
+$resumeOnLeave.on(resumeOnLeaveChanged, (_, value) => value);
+$autoResume.on(autoResumeChanged, (_, value) => value);
+$resumeDelay.on(resumeDelayChanged, (_, value) => value);
+$pauseOnFullTranslation.on(pauseOnFullTranslationChanged, (_, value) => value);
+$blurTranslation.on(blurTranslationChanged, (_, value) => value);
+$showSubtitle.on(showSubtitleChanged, (_, value) => value);
+$showTranslation.on(showTranslationChanged, (_, value) => value);
+$blurSubtitle.on(blurSubtitleChanged, (_, value) => value);
+$blurSubtitle.on(uKeyPressed, (state) => !state);
+$subtitleSource.on(subtitleSourceChanged, (_, value) => value);
+$keepSubtitleVisible.on(keepSubtitleVisibleChanged, (_, value) => value);
+$repeatCount.on(repeatCountChanged, (_, value) => value);
+$pauseAfterRepeat.on(pauseAfterRepeatChanged, (_, value) => value);
+$repeatMarginStart.on(repeatMarginStartChanged, (_, value) => value);
+$repeatMarginEnd.on(repeatMarginEndChanged, (_, value) => value);
 $netflixOnFlightEnabled.on(
   netflixOnFlightEnabledChanged,
   (_, isEnabled) => isEnabled,
@@ -227,6 +299,10 @@ $chatGPTApiKeyModalOpen.on(chatGPTApiKeyModalOpened, () => true);
 $chatGPTApiKeyModalOpen.on(chatGPTApiKeyModalClosed, () => false);
 $subsFontSize.on(
   subsFontSizeChangeFx.doneData,
+  (_, subsFontSize) => subsFontSize,
+);
+$subsTranslationFontSize.on(
+  subsTranslationFontSizeChangeFx.doneData,
   (_, subsFontSize) => subsFontSize,
 );
 $subsBackground.on(subsBackgroundToggleFx.doneData, (_, value) => value);

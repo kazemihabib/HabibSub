@@ -37,7 +37,8 @@ body {
         color: #fff;
         text-decoration: none;
 
-        &.es-popup-kinopub {
+        &.es-popup-kinopub,
+        &.es-popup-streamingcommunity {
           font-weight: bold;
           color: #ed734b;
         }

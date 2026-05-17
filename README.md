@@ -49,6 +49,7 @@ To use the plugin, you must have a subscription to the desired service.
 - [Netflix](https://www.netflix.com)
 - [KinoPub](https://kino.pub)
 - [Coursera](https://www.coursera.org)
+- [StreamingCommunity](https://streamingcommunityz.band)
 
 ### Word and full subtitle translation
 

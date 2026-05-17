@@ -4,6 +4,7 @@ import { $currentSubs, $subs } from "../subs";
 import { TMoveDirection } from "../types";
 import { moveVideoToTime } from "@src/utils/moveVideoToTime";
 import { $streaming } from "../streamings";
+import { moveKeyPressed } from "../keyboard";
 
 const TIME_SEEK_TIME = 5000;
 
@@ -26,7 +27,7 @@ type TMoveFX = {
   direction: TMoveDirection;
   force: boolean;
 };
-export const moveKeyPressed = createEvent<{ direction: TMoveDirection; force: boolean }>();
+
 export const moveFx = createEffect<TMoveFX, void>(({ video, subs, streaming, direction, currentSubs, force }) => {
   if (video === null) {
     return;

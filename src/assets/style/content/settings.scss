@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20000;
+  z-index: 2147483647;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -168,61 +168,92 @@
   }
 }
 
-.es-settings-content {
+.es-settings-container {
   all: revert;
-  line-height: 16px;
-  margin-block-start: 1em;
-  margin-block-end: 1em;
-  font-size: 15px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #fff;
   position: absolute;
-  height: 270px;
-  width: 340px;
-  background-color: #1f1d2b;
-  right: 36px;
+  left: 36px;
   bottom: 116px;
-  z-index: 10000;
-  border-radius: 8px;
+  z-index: 20000;
   display: flex;
-  flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
 
-  &__menu {
+.es-settings-sidebar {
+  width: 220px;
+  background-color: #1a1926;
+  border-radius: 12px;
+  padding: 12px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+  &__item {
+    padding: 12px 20px;
+    cursor: pointer;
     display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
 
-    &__items {
-      display: flex;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #fff;
     }
 
-    &__item {
-      line-height: 46px;
-      padding: 0 16px;
-      font-size: 15px;
-      cursor: pointer;
+    &--active {
+      background-color: #2d2b3d;
+      color: #fff;
+      position: relative;
+    }
 
-      &:first-child {
-        border-radius: 8px 0 0 0;
-      }
-
-      &--active {
-        background-color: #252836;
-      }
+    svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
     }
   }
+}
 
-  &__main {
-    flex: 1;
-    padding: 16px;
-    background-color: #252836;
-    border-radius: 0 0 8px 8px;
+.es-settings-panel {
+  width: 380px;
+  background-color: #1f1d2b;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  max-height: 500px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.es-settings-content {
+  line-height: 1.5;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  &__main__header {
+    margin-bottom: 24px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  &__section-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   &__item {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }
 
   &__element {
@@ -231,17 +262,14 @@
     &__left {
       display: flex;
       flex: 1;
-      text-align: right;
       align-items: center;
-      justify-content: flex-end;
-      margin-right: 8px;
+      margin-right: 12px;
     }
 
     &__right {
       display: flex;
-      flex: 1;
       align-items: center;
-      margin-left: 8px;
+      justify-content: flex-end;
 
       label {
         margin-bottom: 0;
@@ -251,9 +279,15 @@
 
   &__close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 16px;
+    right: 16px;
     cursor: pointer;
+    z-index: 10;
+    color: rgba(255, 255, 255, 0.5);
+
+    &:hover {
+      color: #fff;
+    }
 
     &:after {
       display: inline-block;
@@ -264,6 +298,61 @@
   }
 }
 
+.es-playback-modes {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+
+  &__item {
+    flex: 1;
+    background-color: #252836;
+    border: 1px solid #2d2b3d;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+
+    &:hover {
+      background-color: #2d3042;
+    }
+
+    &--active {
+      background-color: #2d2b3d;
+      border-color: #1296ba;
+      box-shadow: 0 0 0 1px #1296ba;
+    }
+
+    &__icon {
+      margin-bottom: 8px;
+      svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+    }
+
+    &__title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    &__desc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
 .es-settings__select {
   width: 100%;
+  position: relative;
+
+  // React-select's portal/menu z-index fix
+  div[class$="-menu"] {
+    z-index: 100000 !important;
+  }
 }

@@ -17,7 +17,7 @@ export const LearningService: FC<HTMLProps<HTMLSelectElement>> = () => {
       <div className="es-settings-content__element__right">
         <Select
           value={getServiceOption(learningService)}
-          onChange={(option: { value: TLearningService }) => handleTranslateLanguageChanged(option.value)}
+          onChange={(option: { label: string, value: string }) => handleTranslateLanguageChanged(option.value as TLearningService)}
           options={services}
         />
       </div>

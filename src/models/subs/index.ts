@@ -38,8 +38,36 @@ export const fetchSubsFx = createEffect<{ streaming: Service; language: string }
     }
   }
 );
-export const updateCurrentSubsFx = createEffect<{ subs: TSub[]; video: UnitValue<typeof $video> }, TSub[]>(
-  ({ subs, video }) => getCurrentSubs(subs, video!.currentTime * 1000)
+export const updateCurrentSubsFx = createEffect<{ subs: TSub[]; video: UnitValue<typeof $video>; keepSubtitleVisible: boolean }, TSub[]>(
+  ({ subs, video, keepSubtitleVisible }) => {
+    if (!video) return [];
+    
+    const time = video.currentTime * 1000;
+    let currentSubs = getCurrentSubs(subs, time);
+    
+    if (currentSubs.length === 0 && keepSubtitleVisible) {
+      let previousSub = null;
+      const nextSubIndex = subs.findIndex((sub) => sub.start > time);
+      if (nextSubIndex > 0) {
+        previousSub = subs[nextSubIndex - 1];
+      } else if (nextSubIndex === -1 && subs.length > 0) {
+        previousSub = subs[subs.length - 1];
+      }
+      if (previousSub) {
+        currentSubs = [previousSub];
+      }
+    }
+
+    if (currentSubs.length > 0) {
+      console.log("EasySubs: Current Subtitles:", currentSubs.map(s => s.cleanedText).join(" | "));
+    } else if (subs.length > 0) {
+      // Subtitles exist but none for current time
+      // This is normal, but useful for debugging if it stays empty
+    } else {
+      console.debug("EasySubs: No subtitles available to display");
+    }
+    return currentSubs;
+  }
 );
 export const updatePrevCurrentSubsFx = createEffect<TSub[], TSub[]>((subs) => subs);
 export const rawSubsAdded = createEvent<Captions>();

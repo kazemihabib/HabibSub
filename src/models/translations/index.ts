@@ -4,6 +4,7 @@ import {
   createStore,
   sample,
   split,
+  UnitValue,
 } from "effector";
 import { debug } from "patronum";
 
@@ -27,6 +28,8 @@ import { googleNumberToPartOfSpeach } from "@src/utils/googleNumberToPartOfSpeac
 import { createGate } from "effector-react";
 import { findPhrasalVerbs } from "@src/utils/findPhrasalVerbs";
 import { $currentSubs, $subsLanguage } from "../subs";
+import { tKeyPressed } from "../keyboard";
+import toast from "react-hot-toast";
 
 export const $wordTranslations = createStore<TWordTranslation[]>([]);
 export const $wordTranslationsPendings = createStore<Record<string, boolean>>(
@@ -62,7 +65,17 @@ export const $currentSubTranslation = createStore<string>(null);
 export const $subTranslationPendings = createStore<Record<string, boolean>>({});
 export const SubTranslationGate = createGate<string>("SubTranslationGate");
 export const requestSubTranslation = createEvent<string>();
+export const translateCurrentSubtitleKeyPressed = createEvent();
 export const cleanSubTranslation = createEvent();
+
+sample({
+  clock: [translateCurrentSubtitleKeyPressed, tKeyPressed],
+  source: $currentSubs,
+  filter: (subs) => subs.length > 0,
+  fn: (subs) => subs[0].cleanedText,
+  target: requestSubTranslation,
+});
+
 export const fetchSubTranslationFx = createEffect<
   {
     source: string;
@@ -75,6 +88,7 @@ export const fetchSubTranslationFx = createEffect<
   string
 >(async ({ source, language, translationService, deeplApiKey, chatGPTApiKey, chatGPTModel }) => {
   try {
+    console.debug("EasySubs: Sending translation request", { source, language, translationService });
     const resp = await chrome.runtime.sendMessage({
       type: "translateFullText",
       language: language,
@@ -97,15 +111,23 @@ export const fetchSubTranslationFx = createEffect<
     ) {
       return resp;
     } else {
-      const reponseText: string = JSON.parse(resp)
+      const responseText: string = JSON.parse(resp)
         ["sentences"].map((sentence) => sentence["trans"])
         .join(" ");
-      return reponseText;
+      return responseText;
     }
   } catch (error) {
-    console.error(error);
+    console.error("EasySubs: Translation error", error);
     throw error;
   }
+});
+
+sample({
+  clock: fetchSubTranslationFx.failData,
+  fn: (error) => error.message || "Translation failed",
+  target: createEffect<string, void>((message) => {
+    toast.error(message);
+  }),
 });
 
 export const fetchWordTranslationFx = createEffect<
@@ -119,8 +141,10 @@ export const fetchWordTranslationFx = createEffect<
       text: source,
     });
 
-    const transcription: string = result[0][0];
-    const mainTranslation: string = result[1][0][0][5][0][0];
+    const transcription: string = result[0]?.[0] || "";
+    const mainTranslation: string = result[1]?.[0]?.[0]?.[5]?.[0]?.[0] || 
+                                    result[1]?.[0]?.[0]?.[5]?.map((s: any) => s[0]).join(" ") || 
+                                    "";
     const alternativesRaw =
       (result[3] && result[3][5] && result[3][5][0]) || [];
     const alternatives: [] = alternativesRaw
@@ -186,14 +210,6 @@ split({
   },
 });
 
-sample({
-  clock: fetchWordTranslationFx.doneData,
-  source: $wordTranslations,
-  fn: (translations, translation) => {
-    return { translations, translation };
-  },
-});
-
 $currentWordTranslation.on(
   [fetchWordTranslationFx.doneData, updateCurrentWordTranslationFx.doneData],
   (_, translation) => translation,
@@ -250,7 +266,7 @@ $currentSubTranslation.on(
   fetchSubTranslationFx.doneData,
   (_, translation) => translation,
 );
-$currentSubTranslation.reset(SubTranslationGate.close);
+$currentSubTranslation.reset([SubTranslationGate.close, cleanSubTranslation]);
 $subTranslationPendings.on(fetchSubTranslationFx, (pendings, { source }) => ({
   ...pendings,
   [source]: true,
@@ -328,7 +344,7 @@ $wordTranslations.reset($translateLanguage);
 sample({
   clock: $translateLanguage,
   source: $currentWordTranslation,
-  fn: (translations) => translations.source,
+  fn: (translation) => (translation ? translation.source : ""),
   target: requestWordTranslation,
 });
 

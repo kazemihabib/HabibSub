@@ -40,7 +40,11 @@ const manifest = {
         "https://www.primevideo.com/*",
         "https://www.amazon.de/*/video/*",
         "https://inoriginal.online/*",
+        "https://vixcloud.co/*",
+        "https://streamingcommunityz.band/*",
+        "https://www.raiplay.it/*",
       ],
+      all_frames: true,
       js: ["src/pages/contentInjected/index.js"],
       // KEY for cache invalidation
       css: ["assets/css/contentStyle<KEY>.chunk.css"],
@@ -60,6 +64,9 @@ const manifest = {
     "https://api-edge.cognitive.microsofttranslator.com/*",
     "https://translate.yandex.net/*",
     "https://api.openai.com/*",
+    "https://www.raiplay.it/*",
+    "https://mediapolisvod.rai.it/*",
+    "https://mediapolis.rai.it/*",
   ],
   content_security_policy: {
     extension_pages: "script-src 'self'; object-src 'self'",

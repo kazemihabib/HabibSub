@@ -41,6 +41,9 @@ const Popup = () => {
         <li onClick={handleRequestPermissions}>
           <a className="es-popup-kinopub">Enable on Kinopub</a>
         </li>
+        <li onClick={handleRequestPermissions}>
+          <a className="es-popup-streamingcommunity">Enable on StreamingCommunity</a>
+        </li>
         <li onClick={handleFaqLinkClick}>
           <a>FAQ</a>
         </li>

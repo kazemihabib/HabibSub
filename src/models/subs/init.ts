@@ -1,4 +1,4 @@
-import { sample, split } from "effector";
+import { createEffect, UnitValue, sample, split } from "effector";
 import {
   $currentSubs,
   $rawSubs,
@@ -23,8 +23,33 @@ import {
 } from ".";
 import { $streaming } from "../streamings";
 import { $video, videoTimeUpdate } from "../videos";
-import { $autoPause } from "../settings";
+import { 
+  $autoPause, 
+  $playbackMode, 
+  $autoResume,
+  $resumeDelay,
+  $repeatCount,
+  $pauseAfterRepeat,
+  $repeatMarginStart,
+  $repeatMarginEnd,
+  $keepSubtitleVisible,
+  TPlaybackMode 
+} from "../settings";
 import { debug } from "patronum";
+import type { TSub } from "../types";
+
+// State to track repeat counts
+let currentRepeatCount = 0;
+let lastVideoTime = -1;
+let isProgrammaticSeek = false;
+let activeSubForRepeat: TSub | null = null;
+let candidateSubForRepeat: TSub | null = null;
+let completedSubForRepeat: TSub | null = null;
+
+const autoResumeFx = createEffect<{ video: HTMLVideoElement; delaySeconds: number }, void>(async ({ video, delaySeconds }) => {
+  await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
+  video.play();
+});
 
 split({
   source: esSubsChanged,
@@ -47,22 +72,125 @@ sample({
 });
 
 sample({
-  clock: [videoTimeUpdate, $rawSubs],
-  source: { subs: $subs, video: $video },
-  fn: ({ subs, video }, _) => ({ subs, video }),
+  clock: [videoTimeUpdate, $rawSubs, $keepSubtitleVisible],
+  source: { subs: $subs, video: $video, keepSubtitleVisible: $keepSubtitleVisible },
+  fn: ({ subs, video, keepSubtitleVisible }, _) => ({ subs, video, keepSubtitleVisible }),
   target: updateCurrentSubsFx,
 });
+
 sample({
   clock: videoTimeUpdate,
-  source: { currentSubs: $currentSubs, video: $video, autoPause: $autoPause },
-  fn: ({ currentSubs, video, autoPause }, _) => ({ currentSubs, video, autoPause }),
-  filter: ({ currentSubs, video, autoPause }) => {
-    if (currentSubs[0]) {
-      const timeDiff = currentSubs[0].end - video.currentTime * 1000;
-      return autoPause && timeDiff < 250 && timeDiff > 0;
-    }
+  source: { 
+    currentSubs: $currentSubs, 
+    video: $video, 
+    playbackMode: $playbackMode, 
+    autoResume: $autoResume,
+    resumeDelay: $resumeDelay,
+    repeatCount: $repeatCount,
+    pauseAfterRepeat: $pauseAfterRepeat,
+    repeatMarginStart: $repeatMarginStart,
+    repeatMarginEnd: $repeatMarginEnd,
   },
-  target: autoPauseFx,
+  filter: ({ currentSubs, video, playbackMode, repeatMarginEnd }) => {
+    if (!video) return false;
+    const currentTime = video.currentTime * 1000;
+    
+    if (lastVideoTime !== -1) {
+      const timeDiff = currentTime - lastVideoTime;
+      // If time difference is greater than 1000ms, it's a seek
+      if (Math.abs(timeDiff) > 1000) {
+        if (!isProgrammaticSeek) {
+          activeSubForRepeat = null;
+          candidateSubForRepeat = null;
+          completedSubForRepeat = null;
+          currentRepeatCount = 0;
+        } else {
+          isProgrammaticSeek = false;
+        }
+      }
+    }
+    lastVideoTime = currentTime;
+
+    if (playbackMode === "pause" && currentSubs[0]) {
+      const adjustedEnd = currentSubs[0].end;
+      const timeToEnd = adjustedEnd - currentTime;
+      return timeToEnd < 250 && timeToEnd > 0;
+    }
+
+    if (playbackMode === "repeat") {
+      if (currentSubs[0]) {
+        candidateSubForRepeat = currentSubs[0];
+      }
+
+      const subToCheck = activeSubForRepeat || candidateSubForRepeat;
+      if (subToCheck) {
+        // If we are not actively repeating, and we have already completed this sub, skip it
+        if (!activeSubForRepeat && completedSubForRepeat && completedSubForRepeat.id === subToCheck.id) {
+          return false;
+        }
+
+        const safeMarginEnd = Number(repeatMarginEnd) || 0;
+        const adjustedEnd = subToCheck.end + safeMarginEnd;
+        const timeToEnd = adjustedEnd - currentTime;
+        
+        // If we've passed the adjusted end, clear candidates so we don't get stuck
+        if (timeToEnd < -500) {
+          candidateSubForRepeat = null;
+          return false;
+        }
+
+        return timeToEnd < 250 && timeToEnd > 0;
+      }
+    }
+    return false;
+  },
+  target: createEffect<
+    { 
+      currentSubs: UnitValue<typeof $currentSubs>; 
+      video: UnitValue<typeof $video>; 
+      playbackMode: TPlaybackMode; 
+      autoResume: boolean;
+      resumeDelay: number;
+      repeatCount: number;
+      pauseAfterRepeat: boolean;
+      repeatMarginStart: number;
+      repeatMarginEnd: number;
+    },
+    void
+  >(async ({ video, playbackMode, autoResume, resumeDelay, currentSubs, repeatCount, pauseAfterRepeat, repeatMarginStart }) => {
+    if (playbackMode === "repeat") {
+      const subToRepeat = activeSubForRepeat || candidateSubForRepeat;
+      if (!subToRepeat) return;
+      
+      if (!activeSubForRepeat) {
+        activeSubForRepeat = subToRepeat;
+        currentRepeatCount = 0;
+      }
+      
+      if (currentRepeatCount < repeatCount) {
+        currentRepeatCount++;
+        isProgrammaticSeek = true;
+        const safeMarginStart = Number(repeatMarginStart) || 0;
+        let targetTime = (subToRepeat.start - safeMarginStart) / 1000;
+        if (isNaN(targetTime) || targetTime < 0) targetTime = 0;
+        video.currentTime = targetTime;
+        video.play();
+      } else {
+        if (pauseAfterRepeat) {
+          video.pause();
+        }
+        completedSubForRepeat = activeSubForRepeat;
+        activeSubForRepeat = null;
+        candidateSubForRepeat = null;
+        currentRepeatCount = 0;
+      }
+    } else if (playbackMode === "pause") {
+      video.pause();
+      if (autoResume) {
+        autoResumeFx({ video, delaySeconds: resumeDelay });
+      }
+    }
+  }),
 });
 
 sample({

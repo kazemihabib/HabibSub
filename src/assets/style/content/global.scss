@@ -8,6 +8,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif !important;
+  pointer-events: none; // Allow clicks to pass through to video
 
   pre {
     all: unset;
@@ -28,8 +29,127 @@
   .es-sub {
     text-align: center;
     line-height: 1.25;
-    padding: 0 10px;
+    padding: 10px;
+    cursor: default; // Change from pointer to default for text selection
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto; // Re-enable interaction for subtitles
+    user-select: none; // Prevent standard browser selection
+  }
+
+  .es-main-sub {
+    margin-bottom: 8px;
+  }
+
+  .es-sub-translation {
+    position: relative;
+    font-size: 0.8em;
+    opacity: 0.9;
+    transition: all 0.2s;
+
+    .es-full-translation {
+      position: static;
+      transform: none;
+      background-color: transparent;
+      padding: 0;
+      width: auto;
+      text-align: center;
+
+      &:after {
+        display: none;
+      }
+    }
+  }
+
+  .es-sub-blur {
+    filter: blur(8px);
+    user-select: none;
+    transition: all 0.2s;
+
+    &:hover {
+      filter: blur(0);
+    }
+  }
+
+  .es-subs-controls {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+    pointer-events: auto;
+    padding-bottom: 20px;
+  }
+
+  &:hover .es-subs-controls {
+    opacity: 1;
+  }
+
+  .es-drag-handle, .es-translate-icon {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(31, 29, 43, 0.8);
+    border-radius: 4px;
+    padding: 4px;
     cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: #2d2b3d;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+  }
+
+  .es-drag-handle {
+    cursor: grab;
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .es-loading-spinner {
+    animation: rotate 2s linear infinite;
+    width: 30px;
+    height: 30px;
+    
+    & .path {
+      stroke: #1296ba;
+      stroke-linecap: round;
+      animation: dash 1.5s ease-in-out infinite;
+    }
+  }
+
+  @keyframes rotate {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes dash {
+    0% {
+      stroke-dasharray: 1, 150;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -35;
+    }
+    100% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -124;
+    }
   }
 
   .es-sub-item {
@@ -47,6 +167,11 @@
 
     &-highlighted {
       color: #3a88a2;
+    }
+
+    &-selected {
+      background-color: rgba(18, 150, 186, 0.3);
+      border-radius: 4px;
     }
   }
   .es-sub-item-space {
@@ -70,6 +195,14 @@
     box-sizing: border-box;
     white-space: pre-wrap;
     text-wrap: balance;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--loading {
+      width: 100px;
+    }
 
     &:after {
       content: "";
@@ -458,5 +591,82 @@
 
   .es-settings-content {
     bottom: 90px;
+  }
+}
+
+.es-vixcloud {
+  #es {
+    bottom: 120px;
+    z-index: 2147482000; // Ensure it's above JW Player's overlays but below settings
+  }
+
+  .jw-captions {
+    display: none !important;
+  }
+
+  .es-settings-icon {
+    margin: 0 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+
+    svg {
+      width: 24px;
+      color: #fff;
+    }
+  }
+
+  .es-settings-content {
+    bottom: 60px;
+    z-index: 2147483000;
+  }
+}
+
+.es-raiplay {
+  .es-settings {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 100% !important;
+    cursor: pointer;
+    vertical-align: middle;
+    width: 40px; // Match standard vjs button width
+  }
+
+  .es-settings-icon {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .es-settings-container {
+    bottom: 100px;
+    left: 20px;
+    z-index: 2147483647 !important;
+    pointer-events: auto !important;
+  }
+}
+
+.es-raiplay.es-enabled {
+  #es {
+    bottom: 180px !important;
+    z-index: 2147483647 !important;
+    display: block !important;
+  }
+  
+  .vjs-text-track-display {
+    display: none !important;
+  }
+}
+
+.es-raiplay {
+  .video-js {
+    position: relative !important;
   }
 }
