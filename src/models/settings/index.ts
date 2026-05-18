@@ -48,9 +48,6 @@ export const blurTranslationChanged = createEvent<boolean>();
 export const $showSubtitle = withPersist(createStore<boolean>(true));
 export const showSubtitleChanged = createEvent<boolean>();
 
-export const $showTranslation = withPersist(createStore<boolean>(true));
-export const showTranslationChanged = createEvent<boolean>();
-
 export const $blurSubtitle = withPersist(createStore<boolean>(false));
 export const blurSubtitleChanged = createEvent<boolean>();
 
@@ -264,7 +261,6 @@ $resumeDelay.on(resumeDelayChanged, (_, value) => value);
 $pauseOnFullTranslation.on(pauseOnFullTranslationChanged, (_, value) => value);
 $blurTranslation.on(blurTranslationChanged, (_, value) => value);
 $showSubtitle.on(showSubtitleChanged, (_, value) => value);
-$showTranslation.on(showTranslationChanged, (_, value) => value);
 $blurSubtitle.on(blurSubtitleChanged, (_, value) => value);
 $blurSubtitle.on(uKeyPressed, (state) => !state);
 $subtitleSource.on(subtitleSourceChanged, (_, value) => value);

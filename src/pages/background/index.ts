@@ -22,16 +22,6 @@ reloadOnUpdate("pages/content/style.scss");
 
 console.log("background loaded");
 
-chrome.runtime.onInstalled.addListener(function (object) {
-  const onboardingUrl = "https://easysubs.cc/onboarding/";
-
-  if (object.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    chrome.tabs.create({ url: onboardingUrl }, function (tab) {
-      console.log("New tab launched with options page");
-    });
-  }
-});
-
 chrome.runtime.onMessage.addListener(function (message, _sender, sendResponse) {
   console.log("read: ", message);
 

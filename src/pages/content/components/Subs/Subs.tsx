@@ -14,7 +14,6 @@ import {
   $subsTranslationFontSize,
   $blurTranslation,
   $showSubtitle,
-  $showTranslation,
   $blurSubtitle,
   $resumeOnLeave,
   $pauseOnFullTranslation,
@@ -156,7 +155,6 @@ const Sub: FC<{
     blurTranslation,
     showSubtitle,
     blurSubtitle,
-    showTranslation,
     currentSubTranslation,
     handleRequestWordTranslation,
     video,
@@ -169,7 +167,6 @@ const Sub: FC<{
     blurTranslation: $blurTranslation,
     showSubtitle: $showSubtitle,
     blurSubtitle: $blurSubtitle,
-    showTranslation: $showTranslation,
     currentSubTranslation: $currentSubTranslation,
     handleRequestWordTranslation: requestWordTranslation,
     video: $video,
@@ -183,7 +180,7 @@ const Sub: FC<{
   const [finalSelection, setFinalSelection] = useState<{ start: number; end: number; text: string } | null>(null);
 
   useEffect(() => {
-    if (currentSubTranslation && showTranslation) {
+    if (currentSubTranslation) {
       setShowFullTranslation(true);
       if (pauseOnFullTranslation && video && !video.paused) {
         video.pause();
@@ -191,7 +188,7 @@ const Sub: FC<{
     } else {
       setShowFullTranslation(false);
     }
-  }, [currentSubTranslation, showTranslation, pauseOnFullTranslation, video]);
+  }, [currentSubTranslation, pauseOnFullTranslation, video]);
 
   // Clear selection if the subtitle text changes
   useEffect(() => {
